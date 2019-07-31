@@ -236,6 +236,9 @@ actions:
           onAfterScaleIn[workers]:
             - setupRemoteHosts
             - installJMeterAddon
+            
+          onAfterSetCloudletCount[workers]:
+            - installJMeterAddon
 
           buttons:
           - action: runTest
