@@ -1,0 +1,40 @@
+type: install
+name: test
+
+nodes1:
+  - nodeType: apache2
+    nodeGroup: workers
+    
+actions: 
+  createWorker:
+    manifest:
+      type: install
+      name: JMeter Worker   
+      nodes: []
+      onInstall:
+        - forEach(node:nodes.workers):
+            env.control.AddEndpoint:          
+              nodeId : ${@node.id}
+              privatePort : 3306
+              protocol : TCP
+              name : jmeter
+
+    url: https://app.palma.central.jelastic.team/
+    token: ${this.token:5025dd5b364243be8b8704ccac1fd4629fd23ad0}
+    script: |
+      import com.hivext.api.marketplace.Jps;
+
+      manifest = eval('(' + manifest + ')');
+      var node = eval('(' + MANIFEST + ')').nodes1[0];
+      var jps = new Jps({ serverUrl: url });
+
+      node.cloudlets = 16;
+      manifest.nodes.push(node);
+
+      return jps.install({
+        envName: "sdfsdfsdf",
+        session: token,
+        jps: manifest
+      });
+      
+onInstall: createWorker
