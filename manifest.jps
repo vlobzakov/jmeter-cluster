@@ -201,13 +201,13 @@ actions:
     - cmd[workers]: mkdir -p /root/.ssh;echo "${response.responses.out}" >> /root/.ssh/authorized_keys
 
   runTest:
-    - cmd[master]: chmod 777 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
+    - cmd[master]: chmod 775 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
       return:
         type: info
         message: Progress of the running test is available at [${env.url}](${env.url})
 
   stopTest:
-    - cmd [master]: chmod 777 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/kill-workers.sh
+    - cmd [master]: chmod 775 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/kill-workers.sh
   setConfig:
     if (${settings.cfg-type} == 1):
       cmd [master]: bash /root/prepare_plan.sh -u ${settings.vu} -r ${settings.rampup} -t ${settings.duration} -d ${settings.domain} -l '${settings.urls}'
