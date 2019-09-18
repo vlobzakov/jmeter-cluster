@@ -135,6 +135,15 @@ settings:
               inputType: text
               required: false
           2:
+            - name: domain
+              caption: Protocol and Domain
+              type: string
+              tooltip: Testing website entry point.
+              inputType: string
+              default: http://example.com
+              regex: "^(?:http(s)?://)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$"
+              regexText: 'Incorrect Link (example: http(s)://example.com/)'
+              required: true
             - name: jmx
               caption: XML Manifest
               tooltip: "Please insert XML content of your jmx file here."
