@@ -135,15 +135,6 @@ settings:
               inputType: text
               required: false
           2:
-            - name: domain
-              caption: Protocol and Domain
-              type: string
-              tooltip: Testing website entry point.
-              inputType: string
-              default: http://example.com
-              regex: "^(?:http(s)?://)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$"
-              regexText: 'Incorrect Link (example: http(s)://example.com/)'
-              required: true
             - name: jmx
               caption: XML Manifest
               tooltip: "Please insert XML content of your jmx file here."
@@ -210,7 +201,10 @@ actions:
     - cmd[workers]: mkdir -p /root/.ssh;echo "${response.responses.out}" >> /root/.ssh/authorized_keys
 
   runTest:
-    - cmd[master]: chmod 775 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
+    if (${settings.cfg-type} == 1):
+      cmd[master]: chmod 775 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
+    if (${settings.cfg-type} == 2):
+      cmd[master]: chmod 775 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh custom
       return:
         type: info
         message: Progress of the running test is available at [${env.url}](${env.url})
