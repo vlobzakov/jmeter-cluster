@@ -205,9 +205,9 @@ actions:
       cmd[master]: chmod 775 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
     if (${settings.cfg-type} == 2):
       cmd[master]: chmod 775 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh custom
-      return:
-        type: info
-        message: Progress of the running test is available at [${env.url}](${env.url})
+    return:
+      type: info
+      message: Progress of the running test is available at [${env.url}](${env.url})
 
   stopTest:
     - cmd [master]: chmod 775 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/kill-workers.sh
