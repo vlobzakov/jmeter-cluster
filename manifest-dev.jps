@@ -135,6 +135,16 @@ settings:
               type: text
               inputType: text
               required: false
+            - name: platformList
+              caption: Remote Workers Platform List
+              tooltip: |
+                List of remote Jelastic Platforms with tokens.<br>
+                Remote Jelastic app should be indicated as full url and token with ";" separator</br>
+                For example: https://app.demo.jelastic.com/ MYSECURETOKEN1; https://app.demo2.jelastic.com/ MYSECURETOKEN2</br>
+                If the field is empty then test plan will be configured only for local JMeter workers.
+              type: text
+              height: 150
+            
           2:
             - name: jmx
               caption: XML Manifest
@@ -158,6 +168,7 @@ onInstall:
   - setupAuthKey
   - setupMasterConfigs
   - setupMasterOpenvpnServer
+  - setupMasterRemoteAppManager
   - setupCpConfigs
   - setConfig
 
@@ -187,6 +198,7 @@ actions:
         wget ${baseUrl}/scripts/kill-workers.sh -O ~/kill-workers.sh
         wget ${baseUrl}/scripts/run-workers.sh -O ~/run-workers.sh
         wget ${baseUrl}/scripts/prepare_plan.sh -O ~/prepare_plan.sh
+        wget ${baseUrl}/scripts/manage-remote.sh -O ~/manage-remote.sh
         chmod +x ~/*.sh
         rm -rf ${globals.RESULTS_DIR}/*
         mkdir -p ${globals.RESULTS_DIR}/results
@@ -208,20 +220,29 @@ actions:
         wget ${baseUrl}/scripts/centos7-vpn.sh -O ~/centos7-vpn.sh
         chmod +x ~/centos7-vpn.sh
         APPROVE_INSTALL=y APPROVE_IP=y IPV6_SUPPORT=n PORT_CHOICE=1 PROTOCOL_CHOICE=1 DNS=7 COMPRESSION_ENABLED=n CUSTOMIZE_ENC=n CLIENT=jmworkers PASS=1 bash ~/centos7-vpn.sh
+  
+  setupMasterRemoteAppManager:
+    - cmd[master]: |-
+        wget ${baseUrl}/rpms/jmenv-manager-1-1.x86_64.rpm -O ~/jmenv-manager-1-1.x86_64.rpm
+        rpm -Uvh ~/jmenv-manager-1-1.x86_64.rpm
+        /usr/sbin/chkconfig jmenv-manager on
+        /usr/bin/systemctl daemon-reload
+        /etc/init.d/jmenv-manager start
 
   runTest:
-    - cmd[master]: chmod 777 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
+    - cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
       return:
         type: info
         message: Progress of the running test is available at [${env.url}](${env.url})
 
   stopTest:
-    - cmd [master]: chmod 777 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/kill-workers.sh
+    - cmd [master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/kill-workers.sh
   setConfig:
     if (${settings.cfg-type} == 1):
       cmd [master]: bash /root/prepare_plan.sh -u ${settings.vu} -r ${settings.rampup} -t ${settings.duration} -d ${settings.domain} -l '${settings.urls}'
     if (${settings.cfg-type} == 2):
       cmd [master]: bash /root/prepare_plan.sh -c '${settings.jmx}'
+    cmd [master]: bash /root/manage-remote.sh '${settings.platformList}'
   cleanResultsDir:
     cmd [master]: bash /root/clean-results.sh
   resetGrafanaPassword:
