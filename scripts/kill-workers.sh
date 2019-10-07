@@ -14,7 +14,7 @@ do
 done
 
 
-for i in $(cat /root/workers_list);
+for i in $(cat /root/workers_list;cat /root/workers_remote);
 do
    iptables -D INPUT -s $i -j ACCEPT
    iptables -D OUTPUT -d $i -j ACCEPT
