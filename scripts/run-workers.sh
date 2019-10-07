@@ -16,10 +16,13 @@ NAMESERVER='nameserver 8.8.8.8'
 
 #echo $NAMESERVER > /etc/resolv.conf
 
+echo "Check all remote workers..." >> $JM_LOG
+/usr/sbin/jmenv-manager check &>> $JM_LOG
+
 echo "Kill all master java processes..." >> $JM_LOG
 /usr/bin/pkill java; /usr/bin/pkill jmeter;
 
-for i in $(cat /root/workers_list); 
+for i in $(cat /root/workers_list;cat /root/workers_remote); 
 do 
    iptables -I INPUT -s $i -j ACCEPT
    iptables -I OUTPUT -d $i -j ACCEPT
@@ -42,12 +45,12 @@ sleep 10
 echo "Starting Master Jmeter server" >> $JM_LOG
 ulimit -n 999999
 
-WORKERS="$(cat workers_list|xargs |sed -e "s/ /:1099,/g"):1099"
+WORKERS="$(cat workers_list workers_remote|xargs |sed -e "s/ /:1099,/g"):1099"
 [ "x$WORKERS" == "x:1099" ] && WORKERS='' || WORKERS="-R $WORKERS"
 
 bash /root/jmeter/bin/jmeter -Jserver.rmi.ssl.disable=true -n -r -t $TEST_PLAN -l ${CSV_DIR}/${DOMAIN}.csv -e -o ${RESULTS_DIR}/${DOMAIN} $WORKERS >> $JM_LOG
 
-for i in $(cat /root/workers_list);
+for i in $(cat /root/workers_list;cat /root/workers_remote);
 do
    iptables -D INPUT -s $i -j ACCEPT
    iptables -D OUTPUT -d $i -j ACCEPT
