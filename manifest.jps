@@ -232,10 +232,17 @@ actions:
         /etc/init.d/jmenv-manager start
 
   runTest:
-    - cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
+    if (${settings.cfg-type} == 1):
+      cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
+    if (${settings.cfg-type} == 2):
+      cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh custom
+    if (${settings.cfg-type} == 3):
       return:
         type: info
-        message: Progress of the running test is available at [${env.url}](${env.url})
+        message: After changing of remote workers configuration you need to reapply test plan configuration! 
+    return:
+      type: info
+      message: Progress of the running test is available at [${env.url}](${env.url})
 
   stopTest:
     - cmd [master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/kill-workers.sh
