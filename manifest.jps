@@ -85,6 +85,7 @@ settings:
         values:
           1: Use default test plan with tunnable parameters
           2: Deploy custom test plan via <a href="https://cwiki.apache.org/confluence/display/JMETER/JmxTestPlan#JmxTestPlan-JMXFormat" target="_blank">JMX format</a>
+          3: Configure remote workers
         showIf:
           1:
             - name: domain
@@ -135,6 +136,15 @@ settings:
               type: text
               inputType: text
               required: false
+          2:
+            - name: jmx
+              caption: XML Manifest
+              tooltip: "Please insert XML content of your jmx file here."
+              type: text
+              height: 190
+              inputType: text
+              required: true
+          3:
             - name: platformList
               caption: Remote Workers Platform List
               tooltip: |
@@ -144,14 +154,6 @@ settings:
                 If the field is empty then test plan will be configured only for local JMeter workers.
               type: text
               height: 150
-            
-          2:
-            - name: jmx
-              caption: XML Manifest
-              tooltip: "Please insert XML content of your jmx file here."
-              type: text
-              height: 190
-              inputType: text
               required: true
   configGrafana:
     fields:
@@ -241,8 +243,13 @@ actions:
     if (${settings.cfg-type} == 1):
       cmd [master]: bash /root/prepare_plan.sh -u ${settings.vu} -r ${settings.rampup} -t ${settings.duration} -d ${settings.domain} -l '${settings.urls}'
     if (${settings.cfg-type} == 2):
-      cmd [master]: bash /root/prepare_plan.sh -c '${settings.jmx}'
-    cmd [master]: bash /root/manage-remote.sh '${settings.platformList}'
+      writeFile:
+        nodeGroup: master
+        path: /root/TEST_PLAN.jmx
+        body: ${settings.jmx}
+      #cmd [master]: bash /root/prepare_plan.sh -c '${settings.jmx}'
+    if (${settings.cfg-type} == 3):
+      cmd [master]: bash /root/manage-remote.sh '${settings.platformList}'
   cleanResultsDir:
     cmd [master]: bash /root/clean-results.sh
   resetGrafanaPassword:
