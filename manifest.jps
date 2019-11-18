@@ -162,7 +162,6 @@ settings:
           If the field is empty then test plan will be configured only for local JMeter workers.
         type: text
         height: 150
-        required: true
 
 onInstall:
   - installJMeterAddon
