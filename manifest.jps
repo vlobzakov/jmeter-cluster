@@ -85,7 +85,6 @@ settings:
         values:
           1: Use default test plan with tunnable parameters
           2: Deploy custom test plan via <a href="https://cwiki.apache.org/confluence/display/JMETER/JmxTestPlan#JmxTestPlan-JMXFormat" target="_blank">JMX format</a>
-          3: Configure remote workers
         showIf:
           1:
             - name: domain
@@ -144,17 +143,6 @@ settings:
               height: 190
               inputType: text
               required: true
-          3:
-            - name: platformList
-              caption: Remote Workers Platform List
-              tooltip: |
-                List of remote Jelastic Platforms with tokens.<br>
-                Remote Jelastic app should be indicated as full url and token with ";" separator</br>
-                For example: https://app.demo.jelastic.com/ MYSECURETOKEN1; https://app.demo2.jelastic.com/ MYSECURETOKEN2</br>
-                If the field is empty then test plan will be configured only for local JMeter workers.
-              type: text
-              height: 150
-              required: true
   configGrafana:
     fields:
       - name: grafanaPassword
@@ -162,6 +150,18 @@ settings:
         type: string
         tooltip: New password for user admin
         inputType: password
+        required: true
+  configRemoteWorkers:
+    fields:
+      - name: platformList
+        caption: Remote Workers Platform List
+        tooltip: |
+          List of remote Jelastic Platforms with tokens.<br>
+          Remote Jelastic app should be indicated as full url and token with ";" separator</br>
+          For example: https://app.demo.jelastic.com/ MYSECURETOKEN1; https://app.demo2.jelastic.com/ MYSECURETOKEN2</br>
+          If the field is empty then test plan will be configured only for local JMeter workers.
+        type: text
+        height: 150
         required: true
 
 onInstall:
@@ -236,16 +236,13 @@ actions:
       cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
     if (${settings.cfg-type} == 2):
       cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh custom
-    if (${settings.cfg-type} == 3):
-      return:
-        type: info
-        message: After changing of remote workers configuration you need to reapply test plan configuration! 
     return:
       type: info
       message: Progress of the running test is available at [${env.url}](${env.url})
 
   stopTest:
     - cmd [master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/kill-workers.sh
+    
   setConfig:
     if (${settings.cfg-type} == 1):
       cmd [master]: bash /root/prepare_plan.sh -u ${settings.vu} -r ${settings.rampup} -t ${settings.duration} -d ${settings.domain} -l '${settings.urls}'
@@ -254,13 +251,16 @@ actions:
         nodeGroup: master
         path: /root/TEST_PLAN.jmx
         body: ${settings.jmx}
-      #cmd [master]: bash /root/prepare_plan.sh -c '${settings.jmx}'
-    if (${settings.cfg-type} == 3):
-      cmd [master]: bash /root/manage-remote.sh '${settings.platformList}'
+        
   cleanResultsDir:
     cmd [master]: bash /root/clean-results.sh
+    
   resetGrafanaPassword:
     - cmd [cp]: bash /root/grafana-set-password.sh ${settings.grafanaPassword}
+      user: root
+      
+  setRemoteWorkers:
+    - cmd [master]: bash /root/manage-remote.sh '${settings.platformList}'
       user: root
 
   installJMeterAddon:
@@ -280,11 +280,9 @@ actions:
         onAfterScaleIn[workers]:
           - setupRemoteHosts
           - installJMeterAddon
-          #- setConfig
 
         onAfterSetCloudletCount[workers]:
           - installJMeterAddon
-          #- setConfig
 
         buttons:
           - action: runTest
@@ -314,6 +312,11 @@ actions:
             caption: Reset Grafana Password
             logsPath: ${globals.LOG}
             successText: Password has been successfully changed!.
+          - settings: configRemoteWorkers
+            action: setRemoteWorkers
+            caption: Setup Remote Workers
+            logsPath: ${globals.LOG}
+            successText: Remote Jelastic platforms successfully changed!.
 
       nodeCount: ${nodes.workers.length}
       cloudlets: ${nodes.workers.flexibleCloudlets}
