@@ -6,6 +6,7 @@ if [ -z "$1" ]; then
 fi
 
 DOMAIN=$(basename $1)
+TEST_NAME=${DOMAIN}-$(date +"%d-%m-%Y_%Hh-%Mm-%Ss")
 JM_LOG='/root/jmeter-results/jmeter-run.log'
 RESULTS_DIR='/root/jmeter-results/results'
 CSV_DIR='/root/jm-csv'
@@ -39,8 +40,8 @@ curl -XPOST "http://influx:8086/query" --data-urlencode "q=CREATE DATABASE \"jme
 sleep 10
 
 [ -d "${CSV_DIR}" ] || mkdir -p ${CSV_DIR} 
-[ ! -f ${CSV_DIR}/${DOMAIN}.csv ] || rm -f ${CSV_DIR}/${DOMAIN}.csv
-[ ! -d "${RESULTS_DIR}/${DOMAIN}" ] || rm -rf ${RESULTS_DIR}/${DOMAIN}
+[ ! -f ${CSV_DIR}/${TEST_NAME}.csv ] || rm -f ${CSV_DIR}/${TEST_NAME}.csv
+[ ! -d "${RESULTS_DIR}/${TEST_NAME}" ] || rm -rf ${RESULTS_DIR}/${TEST_NAME}
 
 echo "Starting Master Jmeter server" >> $JM_LOG
 ulimit -n 999999
@@ -48,7 +49,7 @@ ulimit -n 999999
 WORKERS="$(cat workers_list workers_remote|xargs |sed -e "s/ /:1099,/g"):1099"
 [ "x$WORKERS" == "x:1099" ] && WORKERS='' || WORKERS="-R $WORKERS"
 
-bash /root/jmeter/bin/jmeter -Jserver.rmi.ssl.disable=true -n -r -t $TEST_PLAN -l ${CSV_DIR}/${DOMAIN}.csv -e -o ${RESULTS_DIR}/${DOMAIN} $WORKERS >> $JM_LOG
+bash /root/jmeter/bin/jmeter -Jserver.rmi.ssl.disable=true -n -r -t $TEST_PLAN -l ${CSV_DIR}/${TEST_NAME}.csv -e -o ${RESULTS_DIR}/${TEST_NAME} $WORKERS >> $JM_LOG
 
 for i in $(cat /root/workers_list;cat /root/workers_remote);
 do
