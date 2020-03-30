@@ -28,7 +28,7 @@ do
    iptables -I INPUT -s $i -j ACCEPT
    iptables -I OUTPUT -d $i -j ACCEPT
    IP_FOR_ALLOW=$(ip r g $i |awk -F 'src' '{print $2}'|xargs)
-   ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -o ConnectionAttempts=2 -n -f root@$i "sh -c 'echo $NAMESERVER > /etc/resolv.conf;iptables -I INPUT -s $IP_FOR_ALLOW -j ACCEPT;iptables -I OUTPUT -d $IP_FOR_ALLOW -j ACCEPT;/usr/bin/pkill java; /usr/bin/pkill jmeter; bash /root/jmeter/bin/jmeter-server -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=$i > /dev/null 2>&1 &'"
+   ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -o ConnectionAttempts=2 -n -f root@$i "sh -c 'echo $NAMESERVER > /etc/resolv.conf;iptables -I INPUT -s $IP_FOR_ALLOW -j ACCEPT;iptables -I OUTPUT -d $IP_FOR_ALLOW -j ACCEPT;/usr/bin/pkill java; /usr/bin/pkill jmeter;while read LINE; do export "$LINE"; done < /.jelenv; bash /root/jmeter/bin/jmeter-server -Jserver.rmi.ssl.disable=true -Djava.rmi.server.hostname=$i > /dev/null 2>&1 &'"
    [ "x$?" == "x0" ] && echo "Add iptables rules and starting jmeter-worker on $i [OK]" >> $JM_LOG || echo "Add iptables rules and starting jmeter-worker on $i [FAILED]" >> $JM_LOG
 done
 
