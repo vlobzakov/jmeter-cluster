@@ -53,7 +53,7 @@ EOF
 
     export VAR1
 
-    perl -lpe 'print "$ENV{VAR1}" if $. == 199' $TEMPLATE > $CONFIG
+    perl -lpe 'print "$ENV{VAR1}" if $. == 198' $TEMPLATE > $CONFIG
 else
     cp $TEMPLATE $CONFIG
 fi
