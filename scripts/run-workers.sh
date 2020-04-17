@@ -60,8 +60,11 @@ WORKERS="$(cat workers_list workers_remote|xargs |sed -e "s/ /:1099,/g"):1099"
 [ "x$WORKERS" == "x:1099" ] && WORKERS='' || WORKERS="-R $WORKERS"
 
 timeout $TEST_DURATION bash /root/jmeter/bin/jmeter -Jserver.rmi.ssl.disable=true -n -r -t $TEST_PLAN -l ${CSV_DIR}/${TEST_NAME}.csv -e $WORKERS >> $JM_LOG
+echo 'Load test finished' >> $JM_LOG
+echo 'Genering report...' >> $JM_LOG
 sed -i '' -e '$ d' ${CSV_DIR}/${TEST_NAME}.csv
 /root/jmeter/bin/jmeter -g ${CSV_DIR}/${TEST_NAME}.csv -o ${RESULTS_DIR}/${TEST_NAME} >> $JM_LOG
+echo 'Genering report [DONE]' >> $JM_LOG
 
 for i in $(cat /root/workers_list;cat /root/workers_remote);
 do
