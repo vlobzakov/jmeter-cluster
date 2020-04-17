@@ -27,7 +27,6 @@ if [ ! -z "$LINKS" ]
 then
     VAR1=""
     for url in $LINKS; do
-    random_timer=($(shuf -i 60-1200 -n 1))
     vals=($url)
     prev=("$VAR1")
     VAR1=$(cat <<EOF
@@ -52,10 +51,6 @@ then
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer ${!url}" enabled="true">
-          <stringProp name="ConstantTimer.delay">${random_timer[0]}</stringProp>
-        </ConstantTimer>
-        <hashTree/>
 EOF
 )
 
@@ -63,13 +58,16 @@ EOF
 
     export VAR1
 
-    perl -lpe 'print "$ENV{VAR1}" if $. == 100' $TEMPLATE > $CONFIG
+    perl -lpe 'print "$ENV{VAR1}" if $. == 131' $TEMPLATE > $CONFIG
 else
     cp $TEMPLATE $CONFIG
 fi
 
 # Set users
-USERS_COUNT=$(( $USERS_COUNT/$(grep -v "^$" /root/workers_list|wc -l) ))
+WORKERS_COUNT=$(grep -v "^$" /root/workers_list|wc -l)
+USERS_PER_NODE=$(( $USERS_COUNT/$WORKERS_COUNT ))
+[ $USERS_PER_NODE -gt 150 ] && { echo "Not enough workers nodes. Maximum users count per worker is 150. For running test with $USERS_COUNT you should have $(( $USERS_COUNT/150 )) nodes"; exit 1; }
+USERS_COUNT=$USERS_PER_NODE
 [ "x$USERS_COUNT" != "x0" ] || USERS_COUNT=1
 [ ! -n "$USERS_COUNT" ] || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/ThreadGroup[@testname='Thread Group']/stringProp[@name='ThreadGroup.num_threads']" -v "$USERS_COUNT" $CONFIG
 
@@ -84,17 +82,17 @@ DURATION=$(( $DURATION*60 ))
 
 # Set domain name
 DOMAIN=$(basename "$URL")
-[ ! -n "$DOMAIN" ] || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.domain']" -v "$DOMAIN" $CONFIG
+[ ! -n "$DOMAIN" ]  && { echo "Doamin not set!"; exit 1; }  || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.domain']" -v "$DOMAIN" $CONFIG
 
 # Set domain regexp
-[ ! -n "$DOMAIN" ] || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.embedded_url_re']" -v "(?i).*$DOMAIN.*" $CONFIG
+xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.embedded_url_re']" -v "(?i).*$DOMAIN.*" $CONFIG
 
 # Set protocol
 PROTOCOL=$(echo $URL| sed -e 's,:.*,,g')
 if [ "x${PROTOCOL^^}" == "xHTTPS" ]
 then
     xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.port']" -v "443" $CONFIG
-    xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.protocol']" -v "https" $CONFIG 
+    xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.protocol']" -v "https" $CONFIG
 else
     xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.port']" -v "80" $CONFIG
     xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.protocol']" -v "http" $CONFIG
