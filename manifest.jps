@@ -31,7 +31,7 @@ nodes:
     displayName: Web
 
   - image: devbeta/jmeter:5.1.1-libericajdk-12.0.1
-    cloudlets: 16
+    cloudlets: 64
     nodeGroup: master
     extip: true
     env:
@@ -51,7 +51,7 @@ nodes:
         sourceNodeGroup: cp
 
   - image: devbeta/jmeter:5.1.1-libericajdk-12.0.1
-    cloudlets: 16
+    cloudlets: 32
     nodeGroup: workers
     env:
       JELASTIC_PORTS: 22
@@ -64,7 +64,7 @@ nodes:
     scalingMode: STATELESS
 
   - image: influxdb:1.7.7
-    cloudlets: 16
+    cloudlets: 32
     nodeGroup: influx
     env:
       JELASTIC_PORTS: 22
@@ -85,6 +85,7 @@ settings:
         values:
           1: Use default test plan with tunnable parameters
           2: Deploy custom test plan via <a href="https://cwiki.apache.org/confluence/display/JMETER/JmxTestPlan#JmxTestPlan-JMXFormat" target="_blank">JMX format</a>
+          3: Wordpress preconfigured testplan
         showIf:
           1:
             - name: domain
@@ -113,7 +114,7 @@ settings:
               max: 60
               increment: 1
               decimalPrecision: ''
-              default: 10
+              default: 30
             - name: rampup
               caption: Ramp-up Period, min
               tooltip: |
@@ -125,7 +126,7 @@ settings:
               max: 60
               increment: 1
               decimalPrecision: ''
-              default: 5
+              default: 20
             - name: urls
               caption: URL List
               tooltip: |
@@ -142,6 +143,72 @@ settings:
               type: text
               height: 190
               inputType: text
+              required: true
+          3:
+            - name: domain
+              caption: Protocol and Domain
+              type: string
+              tooltip: Testing website entry point.
+              inputType: string
+              default: http://example.com
+              regex: "^(?:http(s)?://)?[\\w.-]+(?:\\.[\\w\\.-]+)+[\\w\\-\\._~:/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$"
+              regexText: 'Incorrect Link (example: http(s)://example.com/)'
+              required: true
+            - name: vu
+              caption: Virtual Users (VU)
+              tooltip: Number of active concurrent threads.
+              type: spinner
+              min: 1
+              max: 640
+              increment: 1
+              decimalPrecision: ''
+              default: 50
+            - name: duration
+              caption: Test Duration, min
+              tooltip: Value should be from 1 to 60 minutes.
+              type: spinner
+              min: 1
+              max: 60
+              increment: 1
+              decimalPrecision: ''
+              default: 30
+            - name: rampup
+              caption: Ramp-up Period, min
+              tooltip: |
+                The time frame for all virtual users (VU) to become active. <br>E.g. for 120 VU and ramp-up time 1 minute - 2 new VU will be added each second.<br>
+                Value range - from 0 to 60 minutes.<br>
+                To start all VU immediately please set ramp-up period to 0.
+              type: spinner
+              min: 0
+              max: 60
+              increment: 1
+              decimalPrecision: ''
+              default: 20
+            - name: urls
+              caption: URL List
+              tooltip: |
+                List of website urls that should be included to the test plan.<br>
+                For example: /index.php /hello-world.</br>
+                If the field is empty then test plan will be configured only for website root url.
+              type: text
+              inputType: text
+              required: false  
+            - name: wpLogin
+              caption: Wordpress Login
+              type: string
+              tooltip: |
+                Wordpress login patern without numbers, which was generated via:<br>
+                for SW_USER_I in {10..10010}; do wp –allow-root user create "username${SW_USER_I}" "username${SW_USER_I}@example.com" –user_pass="MySuperPassword" –role="subscriber"; done;.</br>
+                In current example via wp cli will be created 10000 users with usernames from username10 to username10010 and in this field should be specified patern "username"
+              inputType: string
+              default: username
+              required: true
+            - name: wpPassword
+              caption: Wordpress Password
+              type: string
+              tooltip: Wordpress preconfigured password for generated users.
+              inputType: string
+              default: password
               required: true
   configGrafana:
     fields:
@@ -195,10 +262,12 @@ actions:
     - cmd[master]: |-
         yum install epel-release xmlstarlet -y -q
         wget ${baseUrl}/configs/TEST_PLAN.template -O ~/TEST_PLAN.template
+        wget ${baseUrl}/configs/TEST_PLAN-WP.template -O ~/TEST_PLAN-WP.template
         wget ${baseUrl}/scripts/clean-results.sh -O ~/clean-results.sh
         wget ${baseUrl}/scripts/kill-workers.sh -O ~/kill-workers.sh
         wget ${baseUrl}/scripts/run-workers.sh -O ~/run-workers.sh
         wget ${baseUrl}/scripts/prepare_plan.sh -O ~/prepare_plan.sh
+        wget ${baseUrl}/scripts/prepare_wordpress.plan.sh -O ~/prepare_wordpress.plan.sh
         wget ${baseUrl}/scripts/manage-remote.sh -O ~/manage-remote.sh
         chmod +x ~/*.sh
         rm -rf ${globals.RESULTS_DIR}/*
@@ -231,10 +300,10 @@ actions:
         /etc/init.d/jmenv-manager start
 
   runTest:
-    if (${settings.cfg-type} == 1):
-      cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh ${settings.domain}
+    if (${settings.cfg-type} == 1 || ${settings.cfg-type} == 3):
+      cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh -u ${settings.domain} -d ${settings.duration}
     if (${settings.cfg-type} == 2):
-      cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh custom
+      cmd[master]: chmod 755 /var/run/screen;/usr/bin/pkill screen;screen -wipe;screen -d -m /root/run-workers.sh -u custom -d 0
     return:
       type: info
       message: Progress of the running test is available at [${env.url}](${env.url})
@@ -250,7 +319,8 @@ actions:
         nodeGroup: master
         path: /root/TEST_PLAN.jmx
         body: ${settings.jmx}
-        
+    if (${settings.cfg-type} == 3):
+      cmd [master]: bash /root/prepare_wordpress.plan.sh -u ${settings.vu} -r ${settings.rampup} -t ${settings.duration} -d ${settings.domain} -l '${settings.urls}' -w ${settings.wpLogin} -p '${settings.wpPassword}' 
   cleanResultsDir:
     cmd [master]: bash /root/clean-results.sh
     
@@ -331,12 +401,14 @@ actions:
         jps.settings = manifest.settings;
         jps.baseUrl = manifest.baseUrl;
 
-        var max = parseInt((nodeCount * cloudlets) / 0.05, 10);
+        var max = parseInt((nodeCount * cloudlets) / 0.25, 10);
         jps.settings.main.fields[0].showIf[1][1].max = max;
+        jps.settings.main.fields[0].showIf[3][1].max = max;
 
         if (currSettings.vu &&  currSettings.vu > max) {
           currSettings.vu = max;
           jelastic.env.control.ExecCmdByGroup('${env.envName}', session, "master", toJSON([{ "command": 'bash /root/prepare_plan.sh -u ' + max }]), false, false, "root");
+          jelastic.env.control.ExecCmdByGroup('${env.envName}', session, "master", toJSON([{ "command": 'bash /root/prepare_wordpress.plan.sh -u ' + max }]), false, false, "root");
         }
 
         return { result : 0, jps: String(jps), currSettings: currSettings };
