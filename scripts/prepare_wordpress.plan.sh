@@ -57,7 +57,7 @@ else
 fi
 
 # Set users
-WORKERS_COUNT=$(grep -v "^$" /root/workers_list|wc -l)
+WORKERS_COUNT=$(grep -v "^$" /root/workers_*|wc -l)
 [ $USERS_COUNT > 150 ] && { echo "Not enough workers nodes. Maximum users count per worker is 150. For running test with $USERS_COUNT you should have $(( $USERS_COUNT/150 )) nodes"; exit 1; }
 USERS_COUNT=$(( $USERS_COUNT/$WORKERS_COUNT ))
 [ "x$USERS_COUNT" != "x0" ] || USERS_COUNT=1
