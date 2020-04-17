@@ -66,7 +66,7 @@ fi
 # Set users
 WORKERS_COUNT=$(grep -v "^$" /root/workers_*|wc -l)
 USERS_PER_NODE=$(( $USERS_COUNT/$WORKERS_COUNT ))
-[ $USERS_PER_NODE -gt 150 ] && { echo "Not enough workers nodes. Maximum users count per worker is 150. For running test with $USERS_COUNT you should have $(( $USERS_COUNT/150 )) nodes"; exit 1; }
+[ $USERS_PER_NODE -gt 125 ] && { echo "Not enough workers nodes. Maximum users count per worker is 125. For running test with $USERS_COUNT you should have $(( $USERS_COUNT/125 )) nodes"; exit 1; }
 USERS_COUNT=$USERS_PER_NODE
 [ "x$USERS_COUNT" != "x0" ] || USERS_COUNT=1
 [ ! -n "$USERS_COUNT" ] || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/ThreadGroup[@testname='Thread Group']/stringProp[@name='ThreadGroup.num_threads']" -v "$USERS_COUNT" $CONFIG
@@ -82,7 +82,7 @@ fi
 # Set Test Duration
 if [ -n "$DURATION" ]
 then
-    DURATION=$(( $DURATION*60+2 ))
+    DURATION=$(( $DURATION*60+300 ))
     xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/ThreadGroup[@testname='Thread Group']/stringProp[@name='ThreadGroup.duration']" -v "$DURATION" $CONFIG
 fi
 
