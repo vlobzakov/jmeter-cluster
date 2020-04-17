@@ -1,10 +1,12 @@
 #!/bin/bash
 
-while getopts u:w:t:d:l:p:c: option
+while getopts u:r:t:w:t:d:l:p:c: option
 do
  case "${option}"
  in
  u) USERS_COUNT=${OPTARG};;
+ r) RAMP_TIME=${OPTARG};;
+ t) DURATION=${OPTARG};;
  w) USERNAME=${OPTARG};;
  p) PASSWORD=${OPTARG};;
  d) URL=${OPTARG};;
@@ -58,32 +60,50 @@ fi
 
 # Set users
 WORKERS_COUNT=$(grep -v "^$" /root/workers_*|wc -l)
-[ $USERS_COUNT > 125 ] && { echo "Not enough workers nodes. Maximum users count per worker is 125. For running test with $USERS_COUNT you should have $(( $USERS_COUNT/125 )) nodes"; exit 1; }
-USERS_COUNT=$(( $USERS_COUNT/$WORKERS_COUNT ))
+USERS_PER_NODE=$(( $USERS_COUNT/$WORKERS_COUNT ))
+[ $USERS_PER_NODE -gt 125 ] && { echo "Not enough workers nodes. Maximum users count per worker is 125. For running test with $USERS_COUNT you should have $(( $USERS_COUNT/125 )) nodes"; exit 1; }
+USERS_COUNT=$USERS_PER_NODE
 [ "x$USERS_COUNT" != "x0" ] || USERS_COUNT=1
 [ ! -n "$USERS_COUNT" ] || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/ThreadGroup[@testname='Thread Group']/stringProp[@name='ThreadGroup.num_threads']" -v "$USERS_COUNT" $CONFIG
 
 # Set domain name
-DOMAIN=$(basename "$URL")
-[ ! -n "$DOMAIN" ] && { echo "Doamin not set!"; exit 1; } || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.domain']" -v "$DOMAIN" $CONFIG
+if [ -n "$URL" ]
+then
+    DOMAIN=$(basename "$URL")
+    xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.domain']" -v "$DOMAIN" $CONFIG
+    # Set domain regexp
+    xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.embedded_url_re']" -v "(?i).*$DOMAIN.*" $CONFIG
+fi
 
-# Set domain regexp
-xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.embedded_url_re']" -v "(?i).*$DOMAIN.*" $CONFIG
+# Set Rumpup time
+if [ -n "$RAMP_TIME" ]
+then
+    RAMP_TIME=$(( $RAMP_TIME*60 ))
+    [ "x$RAMP_TIME" != "x0" ] || RAMP_TIME=1
+    xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/ThreadGroup[@testname='Thread Group']/stringProp[@name='ThreadGroup.ramp_time']" -v "$RAMP_TIME" $CONFIG
+fi
+
+# Set Test Duration
+if [ -n "$DURATION" ]
+then
+    DURATION=$(( $DURATION*60+300 ))
+    xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/ThreadGroup[@testname='Thread Group']/stringProp[@name='ThreadGroup.duration']" -v "$DURATION" $CONFIG
+fi
 
 # Set protocol
 PROTOCOL=$(echo $URL| sed -e 's,:.*,,g')
-if [ "x${PROTOCOL^^}" == "xHTTPS" ]
+if [[ -n "$PROTOCOL" && "x${PROTOCOL^^}" == "xHTTPS" ]]
 then
     xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.port']" -v "443" $CONFIG
     xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.protocol']" -v "https" $CONFIG
-else
+elif [[ -n "$PROTOCOL" && "x${PROTOCOL^^}" == "xHTTP" ]]
+then
     xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.port']" -v "80" $CONFIG
     xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/ConfigTestElement[@testname='HTTP Request Defaults']/stringProp[@name='HTTPSampler.protocol']" -v "http" $CONFIG
 fi
 
 
 # set wordpress login
-[ ! -n "$USERNAME" ] && { echo "Wordpress Login not set!"; exit 1; } || { USERNAME+='${userNumber}'; xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy/elementProp/collectionProp/elementProp[@name='log']/stringProp[@name='Argument.value']" -v "${USERNAME}" $CONFIG; }
-
+[ ! -n "$USERNAME" ] || { USERNAME+='${userNumber}'; xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy/elementProp/collectionProp/elementProp[@name='log']/stringProp[@name='Argument.value']" -v "${USERNAME}" $CONFIG; }
 # set wordpress password
-[ ! -n "$PASSWORD" ] && { echo "Wordpress Password not set!"; exit 1; } || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy/elementProp/collectionProp/elementProp[@name='pwd']/stringProp[@name='Argument.value']" -v "${PASSWORD}" $CONFIG
+[ ! -n "$PASSWORD" ] || xmlstarlet edit -L -u "/jmeterTestPlan/hashTree/hashTree/hashTree/HTTPSamplerProxy/elementProp/collectionProp/elementProp[@name='pwd']/stringProp[@name='Argument.value']" -v "${PASSWORD}" $CONFIG
