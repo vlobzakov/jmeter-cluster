@@ -203,9 +203,9 @@
       <RandomVariableConfig guiclass="TestBeanGUI" testclass="RandomVariableConfig" testname="Random timer" enabled="true">
         <stringProp name="variableName">random_timer</stringProp>
         <stringProp name="outputFormat"></stringProp>
-        <stringProp name="minimumValue">15000</stringProp>
-        <stringProp name="maximumValue">20000</stringProp>
-        <stringProp name="randomSeed">15000</stringProp>
+        <stringProp name="minimumValue">20000</stringProp>
+        <stringProp name="maximumValue">30000</stringProp>
+        <stringProp name="randomSeed">25000</stringProp>
         <boolProp name="perThread">true</boolProp>
       </RandomVariableConfig>
       <hashTree/>
