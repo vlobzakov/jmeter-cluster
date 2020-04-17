@@ -20,6 +20,8 @@ TEMPLATE="/root/TEST_PLAN.template"
 if [ ! -z "$CUSTOM" ]
 then
     echo "$CUSTOM" > $CONFIG
+    TEST_DURATION=$(grep 'ThreadGroup.duration' $CONFIG |awk -v RS='>' -v FS='<' 'NR>1{print $1}'|xargs)
+    sed -i 's|<stringProp name="ThreadGroup.duration">'"$TEST_DURATION"'</stringProp>|<stringProp name="ThreadGroup.duration">'"$(( $TEST_DURATION+300 ))"'</stringProp>|' $CONFIG
     exit 0
 fi
 
