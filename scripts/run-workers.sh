@@ -22,6 +22,11 @@ truncate -s0 $JM_LOG
 
 NAMESERVER='nameserver 8.8.8.8'
 
+if [ "x$TEST_DURATION" == "x0" ]
+then
+    TEST_DURATION=$(grep 'ThreadGroup.duration' $TEST_PLAN |awk -v RS='>' -v FS='<' 'NR>1{print $1}'|xargs)
+fi
+
 echo "Check all remote workers..." >> $JM_LOG
 /usr/sbin/jmenv-manager check &>> $JM_LOG
 
