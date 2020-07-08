@@ -63,7 +63,7 @@ nodes:
     count: 2
     scalingMode: STATELESS
 
-  - image: influxdb:1.7.7
+  - image: devbeta/jmeter-influxdb:1.0
     cloudlets: 32
     nodeGroup: influx
     env:
@@ -245,11 +245,11 @@ actions:
     - cmd[cp]: |-
         wget ${baseUrl}/configs/nginx.conf -O /etc/nginx/nginx.conf
         /etc/init.d/nginx restart
-        yum -q -y localinstall https://dl.grafana.com/oss/release/grafana-6.2.5-1.x86_64.rpm
+        wget ${baseUrl}/configs/grafana.repo -O /etc/yum.repos.d/grafana.repo
+        yum -y install grafana
         systemctl daemon-reload
         systemctl enable grafana-server.service
-        sed -i 's|;root_url = http://localhost:3000|root_url = %(protocol)s://%(domain)s/grafana/|' /etc/grafana/grafana.ini
-        sed -i 's|;domain = localhost|domain = localhost|' /etc/grafana/grafana.ini
+        wget ${baseUrl}/configs/grafana.ini -O /etc/grafana/grafana.ini
         wget ${baseUrl}/configs/grafana.db -O /var/lib/grafana/grafana.db
         chown -R grafana.grafana /var/lib/grafana
         systemctl start grafana-server.service
