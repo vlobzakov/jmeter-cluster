@@ -5,7 +5,7 @@
 
 <br>
 
-Jelastic package **JMeter-cluster** implies automated solution  that allows to carry out rapid web-site performance benchmark testing in a minutes with no specific knowledge required. The package installs application optimized for three different testing appliance that can be changed at any time with reconfiguration functionality.  
+Jelastic package **JMeter-cluster** implements automated solution  that allows to carry out rapid web-site performance benchmark testing in a minutes with no specific knowledge required. The package installs application optimized for three different testing appliance that can be changed at any time with reconfiguration functionality.  
 
 ## Installation
 
@@ -19,7 +19,7 @@ Click the **DEPLOY TO JELASTIC** button, specify your email address within the w
 
 Once the manifest is imported, make a choice which appliance fits best your benchmarking.
 
-1. **default test plan with tunnable parameters**  
+1. **Use default test plan with tunnable parameters**  
 
 ![default-testplan](images/default-testplan.png)
 
