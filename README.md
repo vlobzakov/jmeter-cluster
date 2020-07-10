@@ -22,7 +22,7 @@ Once the manifest is imported, make a choice which appliance fits best your benc
 1. **Use default test plan with tunnable parameters**  
 
 <p align="left">
-<img src="images/default-testplan.png" width="714">
+<img src="images/default-testplan.png" width="476">
 </p>
 
   The key test plan parameters that available in the installation window are:  
@@ -40,13 +40,13 @@ Once the manifest is imported, make a choice which appliance fits best your benc
 2. **Deploy custom test plan via** **[JMX format](https://cwiki.apache.org/confluence/display/JMETER/JmxTestPlan#JmxTestPlan-JMXFormat)**. This option allows to conduct a [self created](https://jmeter.apache.org/usermanual/build-test-plan.html) custom test plan. 
 
 <p align="left">  
-<img src="images/custom-testplan.png" width="713">
+<img src="images/custom-testplan.png" width="476">
 </p>
   
 3. **Wordpress preconfigured testplan**. This option allows to run the tests optimized for the web sites based on WordPress CMS.
 
 <p align="left">  
-<img src="images/wordpress-testplan.png" width="715">
+<img src="images/wordpress-testplan.png" width="476">
 </p>
 
 The JMeter settings are similar to the first clause and the target web site should be prepared according to this guide: [http://wordpresshostingbenchmarks.reviewsignal.com/setup-instructions/](http://wordpresshostingbenchmarks.reviewsignal.com/setup-instructions/). It requires to create users that will simulate your web site subscribers. This is can be done via WordPress CLI with a script:
@@ -61,19 +61,19 @@ User generation takes time, thus wait till the generation process is completed.
 In order to increase cluster capacity the remote workers can be added to the cluster. This is implemented through creating remote JMeter dashboards at [Jelastic hosting platforms](https://docs.jelastic.com/jelastic-hoster-info/). 
 
 <p align="left">  
-<img src="images/remote-worker-setup-full.png" width="594">
+<img src="images/remote-worker-setup-full.png" width="476">
 </p>
 
 Fill in the list of workers with hosting platform's URL and [access token](https://docs.jelastic.com/personal-access-tokens/).
 
 <p align="left">  
-<img src="images/remote-worker-list.png" width="660">
+<img src="images/remote-worker-list.png" width="476">
 </p>
 
 Alternatively you may manage remote workers with CLI: **jmenv-manager**
 
 <p align="left">  
-<img src="images/remote-worker-cli.png" width="682">
+<img src="images/remote-worker-cli.png" width="476">
 </p>
 
 ## Web Site Testing
@@ -81,7 +81,7 @@ Alternatively you may manage remote workers with CLI: **jmenv-manager**
 To begin the test, open *JMeter Cluster* **Add-Ons** at **Master** node and press **Run Test**.
 
 <p align="left">  
-<img src="images/master-addons-run-test.png" width="574">
+<img src="images/master-addons-run-test.png" width="476">
 </p>
 
  Then popup window appears with an URL the test results can be reached.
@@ -91,7 +91,7 @@ To begin the test, open *JMeter Cluster* **Add-Ons** at **Master** node and pres
 </p>
 
 <p align="left">  
-<img src="images/jmeter-results.png" width="657">
+<img src="images/jmeter-results.png" width="476">
 </p>
  
 You may go to [GRAFANA](https://grafana.com/) to monitor results in real-time or wait untill test will be comleted and observe the results summarized by JMeter clicking on the **RESULTS DIR** button.
