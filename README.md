@@ -39,13 +39,11 @@ Once the manifest is imported, make a choice which appliance fits best your benc
   
 ![default-testplan](images/custom-testplan.png)  
   
-3. **Wordpress preconfigured testplan**. Using this option allows to run the tests optimized for the web sites based on WordPress CMS.
+3. **Wordpress preconfigured testplan**. This option allows to run the tests optimized for the web sites based on WordPress CMS.
   
 ![default-testplan](images/wordpress-testplan.png)
 
-The settings are similar to the first clause.
-   
-Also WordPress testing requires to create users that will simulate your web site subscribers. This is can be done via WordPress CLI with a script:
+The JMeter settings are similar to the first clause and the target web site should be prepared according to this guide: [http://wordpresshostingbenchmarks.reviewsignal.com/setup-instructions/](http://wordpresshostingbenchmarks.reviewsignal.com/setup-instructions/). It requires to create users that will simulate your web site subscribers. This is can be done via WordPress CLI with a script:
 
   ***for SW_USER_I in {10..10010}; do wp --allow-root user create "username${SW_USER_I}" "username${SW_USER_I}@example.com" --user_pass="password123" --role="subscriber"; done;***
 
