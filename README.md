@@ -33,17 +33,17 @@ Once the manifest is imported, make a choice which appliance fits best your benc
     
   - **Ramp-up Period, min**. This is the time during which virtual users will be available to send requests to the target. It allows you to make a smooth and predictable start.
   
-  - **URL List**. Specify here the site URLs yoou need to take part in the testing. E.g. */index.php* */hello-world.php* separated by space.
+  - **URL List**. Specify here the site URLs you need to take part in the testing. E.g. */index.php* */hello-world.php* separated by space.
   
 2. **Deploy custom test plan via** **[JMX format](https://cwiki.apache.org/confluence/display/JMETER/JmxTestPlan#JmxTestPlan-JMXFormat)**. This option allows to conduct a [self created](https://jmeter.apache.org/usermanual/build-test-plan.html) custom test plan. 
   
 ![default-testplan](images/custom-testplan.png)  
   
-3. **Wordpress preconfigured testplan)**. Using this option allows to run the tests optimized for the web sites based on WordPress CMS.
+3. **Wordpress preconfigured testplan**. Using this option allows to run the tests optimized for the web sites based on WordPress CMS.
   
 ![default-testplan](images/wordpress-testplan.png)
 
-The setting are similar to the first clause.
+The settings are similar to the first clause.
    
 Also WordPress testing requires to create users that will simulate your web site subscribers. This is can be done via WordPress CLI with a script:
 
