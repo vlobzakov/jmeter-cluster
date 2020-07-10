@@ -52,6 +52,21 @@ Also WordPress testing requires to create users that will simulate your web site
 Log in via [SSH](https://docs.jelastic.com/ssh-access/) to your WordPress environment and run the script in command line from the WordPress installation directory.
 User generation takes time, thus wait till the generation process is completed.
 
+## Remote Workers Setup
+
+In order to increase cluster capacity the remote workers can be added to the cluster. This is implemented through creating remote JMeter dashboards at [Jelastic hosting platforms](https://docs.jelastic.com/jelastic-hoster-info/). 
+
+![remote-worker-setup](images/remote-worker-setup-full.png)
+
+Fill in the list of workers with hosting platform's URL and [access token](https://docs.jelastic.com/personal-access-tokens/).
+
+![remote-worker-list](images/remote-worker-list.png)
+
+Alternatively you may manage remote workers with CLI: **jmenv-manager**
+
+![remote-worker-cli](images/remote-worker-cli.png)
+
+
 ## Web Site Testing
 
 To begin the test, open *JMeter Cluster* **Add-Ons** at **Master** node and press **Run Test**.
@@ -60,6 +75,8 @@ To begin the test, open *JMeter Cluster* **Add-Ons** at **Master** node and pres
 
  Then popup window appears with an URL the test results can be reached.
  
+ ![run-test](images/result-url.png)
+  
  ![run-test](images/jmeter-results.png)
  
 You may go to [GRAFANA](https://grafana.com/) to monitor results in real-time or wait untill test will be comleted and observe the results summarized by JMeter clicking on the **RESULTS DIR** button.
