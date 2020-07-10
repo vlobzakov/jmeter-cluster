@@ -85,7 +85,7 @@ settings:
         values:
           1: Use default test plan with tunnable parameters
           2: Deploy custom test plan via <a href="https://cwiki.apache.org/confluence/display/JMETER/JmxTestPlan#JmxTestPlan-JMXFormat" target="_blank">JMX format</a>
-          3: Wordpress preconfigured testplan
+          3: WordPress preconfigured testplan
         showIf:
           1:
             - name: domain
@@ -194,19 +194,19 @@ settings:
               inputType: text
               required: false  
             - name: wpLogin
-              caption: Wordpress Login
+              caption: WordPress Login
               type: string
               tooltip: |
-                Wordpress login patern without numbers, which was generated via:<br>
+                WordPress login pattern without numbers, which was generated via:<br>
                 for SW_USER_I in {10..10010}; do wp –allow-root user create "username${SW_USER_I}" "username${SW_USER_I}@example.com" –user_pass="MySuperPassword" –role="subscriber"; done;.</br>
-                In current example via wp cli will be created 10000 users with usernames from username10 to username10010 and in this field should be specified patern "username"
+                In current example via wp cli will be created 10000 users with usernames from username10 to username10010 and in this field should be specified pattern "username"
               inputType: string
               default: username
               required: true
             - name: wpPassword
-              caption: Wordpress Password
+              caption: WordPress Password
               type: string
-              tooltip: Wordpress preconfigured password for generated users.
+              tooltip: WordPress preconfigured password for generated users.
               inputType: string
               default: password
               required: true

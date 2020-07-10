@@ -1,4 +1,4 @@
-# Jmeter Cluster
+# JMeter Cluster
 <img align="left" width="100" src="images/jmeter-cluster.png">
 
  **JMeter** is a software that can perform a stress test, a performance-oriented business (functional) test, a regression test, etc. with various protocols and technologies targeting remote systems.
