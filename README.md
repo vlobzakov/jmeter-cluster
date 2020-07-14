@@ -1,9 +1,7 @@
 # JMeter Cluster
 <img align="left" width="100" src="images/jmeter-cluster-new.png">
 
-   **JMeter** is a software that can perform a stress test, a performance-oriented business (functional) test, a regression test, etc. with various protocols and technologies targeting remote systems.
-
-<br>
+**JMeter** is a software that can perform a stress test, a performance-oriented business (functional) test, a regression test, etc. with various protocols and technologies targeting remote systems. 
 
 Jelastic package **JMeter-cluster** implements automated solution  that allows to carry out rapid web-site performance benchmark testing in a minutes with no specific knowledge required. The package installs application optimized for three different testing appliance that can be changed at any time with reconfiguration functionality.  
 
