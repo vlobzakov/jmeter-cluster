@@ -338,7 +338,7 @@ actions:
         name: JMeter Cluster Settings
         description: Run, stop or update the test plan.
         type: update
-        logo: /images/pt-70x70.png
+        logo: /images/jmeter-cluster-logo.png
         onAfterScaleOut[workers]:
           - setupRemoteHosts
           - installJMeterAddon
